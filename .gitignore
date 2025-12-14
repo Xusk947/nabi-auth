@@ -1,0 +1,51 @@
+# Go build artifacts
+/bin/
+/build/
+/dist/
+/tmp/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go modules
+/go.sum
+/vendor/
+
+# SQLC generated code output
+sqlc/
+**/sqlc/
+/database/sqlc/
+
+# Database migration logs, dumps
+*.db
+
+# Fiber static files
+public/
+static/
+
+# IDE/editor files
+.idea/
+.vscode/
+*.swp
+*~
+*.sublime-workspace
+*.sublime-project
+
+# Logs
+*.log
+
+# Env config
+.env
+.env.*
+!env.example  # оставить шаблон для удобства
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+coverage.out
