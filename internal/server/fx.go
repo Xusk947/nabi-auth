@@ -1,10 +1,10 @@
 package server
 
 import (
-	"fiber-di-server-template/internal/server/example"
+	"nabi-auth/internal/server/auth"
 	"go.uber.org/fx"
 )
 
 var Module = fx.Options(
-	example.Module,
+	auth.Module,
 )

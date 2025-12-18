@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "nabi-auth/api/proto/auth";
+
+// Auth service для внутренней микросервисной коммуникации
+service AuthService {
+  // GetPublicKey возвращает публичный ключ для верификации JWT токенов
+  rpc GetPublicKey(GetPublicKeyRequest) returns (GetPublicKeyResponse);
+  
+  // VerifyToken верифицирует JWT токен (опционально, для централизованной верификации)
+  rpc VerifyToken(VerifyTokenRequest) returns (VerifyTokenResponse);
+}
+
+message GetPublicKeyRequest {
+  // Пустое сообщение, так как публичный ключ один
+}
+
+message GetPublicKeyResponse {
+  // Публичный ключ в PEM формате
+  string public_key_pem = 1;
+  // Алгоритм подписи
+  string algorithm = 2;
+  // Key ID (для версионирования ключей)
+  string key_id = 3;
+}
+
+message VerifyTokenRequest {
+  string token = 1;
+}
+
+message VerifyTokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+  int64 expires_at = 3;
+  string error = 4;
+}
+

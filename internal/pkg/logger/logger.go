@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"fiber-di-server-template/internal/pkg/config"
+	"nabi-auth/internal/pkg/config"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )

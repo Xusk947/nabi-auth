@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fiber-di-server-template/internal/pkg"
-	"fiber-di-server-template/internal/server"
+	"nabi-auth/internal/pkg"
+	"nabi-auth/internal/server"
 	"go.uber.org/fx"
 )
 

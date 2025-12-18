@@ -2,8 +2,8 @@ package database
 
 import (
 	"context"
-	db "fiber-di-server-template/db/gen/queries.go"
-	"fiber-di-server-template/internal/pkg/config"
+	db "nabi-auth/db/gen/queries.go"
+	"nabi-auth/internal/pkg/config"
 	"github.com/amacneil/dbmate/v2/pkg/dbmate"
 	_ "github.com/amacneil/dbmate/v2/pkg/driver/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"

@@ -1,11 +1,11 @@
 package pkg
 
 import (
-	"fiber-di-server-template/internal/pkg/config"
-	"fiber-di-server-template/internal/pkg/database"
-	"fiber-di-server-template/internal/pkg/logger"
-	"fiber-di-server-template/internal/pkg/middleware"
-	"fiber-di-server-template/internal/pkg/server"
+	"nabi-auth/internal/pkg/config"
+	"nabi-auth/internal/pkg/database"
+	"nabi-auth/internal/pkg/logger"
+	"nabi-auth/internal/pkg/middleware"
+	"nabi-auth/internal/pkg/server"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"

@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"fiber-di-server-template/internal/pkg/config"
+	"nabi-auth/internal/pkg/config"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"

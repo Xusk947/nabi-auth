@@ -12,7 +12,6 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	Auth     Auth
-	S3       S3
 }
 
 type ServerConfig struct {
@@ -25,12 +24,18 @@ type DatabaseConfig struct {
 }
 
 type Auth struct {
-	JWTSecret string `env:"JWT_SECRET,default=secret"`
+	JWTPrivateKeyPath   string `env:"JWT_PRIVATE_KEY_PATH,default=./keys/jwt_private.pem"`
+	JWTPublicKeyPath    string `env:"JWT_PUBLIC_KEY_PATH,default=./keys/jwt_public.pem"`
+	AccessTokenTTL      int    `env:"ACCESS_TOKEN_TTL,default=3600"`      // 1 hour in seconds
+	RefreshTokenTTL     int    `env:"REFRESH_TOKEN_TTL,default=2592000"`  // 30 days in seconds
+	GoogleClientID      string `env:"GOOGLE_CLIENT_ID"`
+	GoogleClientSecret  string `env:"GOOGLE_CLIENT_SECRET"`
+	GoogleRedirectURL   string `env:"GOOGLE_REDIRECT_URL,default=http://localhost:8000/auth/oauth2/google/callback"`
+	TelegramBotToken    string `env:"TELEGRAM_BOT_TOKEN"`
+	OTPExpiration       int    `env:"OTP_EXPIRATION,default=600"` // 10 minutes in seconds
+	OTPMaxAttempts      int    `env:"OTP_MAX_ATTEMPTS,default=5"`
 }
 
-type S3 struct {
-	URL string `env:"S3_URL"`
-}
 
 var (
 	once sync.Once
