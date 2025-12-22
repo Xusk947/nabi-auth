@@ -39,10 +39,10 @@ type TelegramVerifyRequest struct {
 // Response DTOs
 
 type AuthResponse struct {
-	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
-	ExpiresIn    int64     `json:"expires_in"`
-	User         UserInfo  `json:"user"`
+	AccessToken  string   `json:"access_token"`
+	RefreshToken string   `json:"refresh_token"`
+	ExpiresIn    int64    `json:"expires_in"`
+	User         UserInfo `json:"user"`
 }
 
 type UserInfo struct {
@@ -53,8 +53,8 @@ type UserInfo struct {
 }
 
 type OTPResponse struct {
-	Message    string `json:"message"`
-	ExpiresIn  int    `json:"expires_in"`
+	Message   string `json:"message"`
+	ExpiresIn int    `json:"expires_in"`
 }
 
 type ErrorResponse struct {
@@ -69,20 +69,20 @@ type PasswordAuthData struct {
 }
 
 type GoogleAuthData struct {
-	GoogleID      string `json:"google_id"`
-	Email         string `json:"email"`
-	AccessToken   string `json:"access_token,omitempty"`
-	RefreshToken  string `json:"refresh_token,omitempty"`
+	GoogleID     string `json:"google_id"`
+	Email        string `json:"email"`
+	AccessToken  string `json:"access_token,omitempty"`
+	RefreshToken string `json:"refresh_token,omitempty"`
 }
 
 type TelegramAuthData struct {
-	TelegramID    int64  `json:"telegram_id"`
-	Username      string `json:"username,omitempty"`
-	FirstName     string `json:"first_name,omitempty"`
-	LastName      string `json:"last_name,omitempty"`
-	PhotoURL      string `json:"photo_url,omitempty"`
-	AuthDate      int64  `json:"auth_date"`
-	Hash          string `json:"hash"`
+	TelegramID int64  `json:"telegram_id"`
+	Username   string `json:"username,omitempty"`
+	FirstName  string `json:"first_name,omitempty"`
+	LastName   string `json:"last_name,omitempty"`
+	PhotoURL   string `json:"photo_url,omitempty"`
+	AuthDate   int64  `json:"auth_date"`
+	Hash       string `json:"hash"`
 }
 
 // Helper functions
@@ -106,4 +106,3 @@ func ToUserInfo(userID pgtype.UUID, email, phoneNumber, telegramUsername pgtype.
 	}
 	return info
 }
-

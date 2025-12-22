@@ -1,9 +1,9 @@
 package main
 
 import (
+	"go.uber.org/fx"
 	"nabi-auth/internal/pkg"
 	"nabi-auth/internal/server"
-	"go.uber.org/fx"
 )
 
 func main() {

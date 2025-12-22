@@ -2,8 +2,8 @@ package server
 
 import (
 	"context"
-	"nabi-auth/internal/pkg/config"
 	"fmt"
+	"nabi-auth/internal/pkg/config"
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/fx"

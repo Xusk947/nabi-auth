@@ -32,4 +32,3 @@ func FromPgtypeUUID(pgUUID pgtype.UUID) (uuid.UUID, error) {
 	}
 	return uuid.Nil, nil
 }
-

@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
-	db "nabi-auth/db/gen/queries.go"
 	"github.com/jackc/pgx/v5/pgtype"
+	db "nabi-auth/db/gen/queries.go"
 )
 
 //go:generate mockgen -source=repository.go -destination=mocks/repository_mock.go -package=mocks
@@ -191,4 +191,3 @@ func (r *Repository) MarkOTPAsUsed(ctx context.Context, otpID pgtype.UUID) error
 func (r *Repository) IncrementOTPAttempts(ctx context.Context, otpID pgtype.UUID) error {
 	return r.queries.IncrementOTPAttempts(ctx, otpID)
 }
-

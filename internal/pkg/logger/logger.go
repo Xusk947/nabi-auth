@@ -1,9 +1,9 @@
 package logger
 
 import (
-	"nabi-auth/internal/pkg/config"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"nabi-auth/internal/pkg/config"
 )
 
 var Log *zap.Logger

@@ -8,10 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"nabi-auth/internal/pkg/config"
-	"nabi-auth/internal/pkg/jwt"
-	"nabi-auth/internal/server/auth/mocks"
-	db "nabi-auth/db/gen/queries.go"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
@@ -21,6 +17,10 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 	"golang.org/x/crypto/bcrypt"
+	db "nabi-auth/db/gen/queries.go"
+	"nabi-auth/internal/pkg/config"
+	"nabi-auth/internal/pkg/jwt"
+	"nabi-auth/internal/server/auth/mocks"
 )
 
 // ============================================================================
@@ -47,7 +47,7 @@ func (s *AuthTestSuite) SetupSuite() {
 	s.ctx = context.Background()
 	s.logger = zaptest.NewLogger(s.T())
 	s.config = createTestConfig()
-	
+
 	var err error
 	s.jwtService, err = jwt.NewJWTService("", "", s.logger)
 	require.NoError(s.T(), err)
@@ -127,26 +127,26 @@ func cleanupTestData(t *testing.T, pool *pgxpool.Pool) {
 func createTestConfig() *config.Config {
 	return &config.Config{
 		Auth: config.Auth{
-			JWTPrivateKeyPath:   "",
-			JWTPublicKeyPath:    "",
-			AccessTokenTTL:       3600,
-			RefreshTokenTTL:      2592000,
-			GoogleClientID:       "test-client-id",
-			GoogleClientSecret:   "test-client-secret",
-			GoogleRedirectURL:    "http://localhost:8000/auth/oauth2/google/callback",
-			TelegramBotToken:     "test-bot-token",
-			OTPExpiration:        600,
-			OTPMaxAttempts:       5,
+			JWTPrivateKeyPath:  "",
+			JWTPublicKeyPath:   "",
+			AccessTokenTTL:     3600,
+			RefreshTokenTTL:    2592000,
+			GoogleClientID:     "test-client-id",
+			GoogleClientSecret: "test-client-secret",
+			GoogleRedirectURL:  "http://localhost:8000/auth/oauth2/google/callback",
+			TelegramBotToken:   "test-bot-token",
+			OTPExpiration:      600,
+			OTPMaxAttempts:     5,
 		},
 	}
 }
 
 // Test constants
 const (
-	testEmail        = "test@example.com"
-	testPassword     = "password123"
+	testEmail         = "test@example.com"
+	testPassword      = "password123"
 	testWrongPassword = "wrongpassword"
-	testPhoneNumber  = "+1234567890"
+	testPhoneNumber   = "+1234567890"
 	minPasswordLength = 8
 )
 
@@ -637,7 +637,7 @@ func (s *AuthTestSuite) TestRefreshToken() {
 		{
 			name:         "invalid refresh token (JWT validation fails)",
 			refreshToken: "invalid_token",
-			setupMock:    func() {
+			setupMock: func() {
 				// JWT validation will fail, no repo calls needed
 			},
 			expectError: true,
@@ -1042,4 +1042,3 @@ func TestIntegration_AuthMethod_Creation(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
-

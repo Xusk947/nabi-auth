@@ -7,11 +7,13 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"nabi-auth/internal/pkg/config"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
@@ -221,3 +223,9 @@ func (j *JWTService) GetPublicKeyPEM() ([]byte, error) {
 	}), nil
 }
 
+var Module = fx.Module(
+	"jwt",
+	fx.Provide(func(cfg *config.Config, logger *zap.Logger) (*JWTService, error) {
+		return NewJWTService(cfg.Auth.JWTPrivateKeyPath, cfg.Auth.JWTPublicKeyPath, logger)
+	}),
+)

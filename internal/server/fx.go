@@ -1,8 +1,8 @@
 package server
 
 import (
-	"nabi-auth/internal/server/auth"
 	"go.uber.org/fx"
+	"nabi-auth/internal/server/auth"
 )
 
 var Module = fx.Options(

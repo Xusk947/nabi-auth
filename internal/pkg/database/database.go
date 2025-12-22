@@ -2,12 +2,12 @@ package database
 
 import (
 	"context"
-	db "nabi-auth/db/gen/queries.go"
-	"nabi-auth/internal/pkg/config"
 	"github.com/amacneil/dbmate/v2/pkg/dbmate"
 	_ "github.com/amacneil/dbmate/v2/pkg/driver/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/fx"
+	db "nabi-auth/db/gen/queries.go"
+	"nabi-auth/internal/pkg/config"
 	"net/url"
 )
 
