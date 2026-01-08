@@ -17,5 +17,3 @@ To apply migrations run `dbmate up`
 To rollback migrations run `dbmate down`
 
 And don't forget to change `DATABASE_URL` in `.env` file
-
-written by @Xusk947 (e.g. Aziz)

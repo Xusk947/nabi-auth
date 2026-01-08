@@ -34,6 +34,8 @@ type IService interface {
 	SendOTP(ctx context.Context, req SendOTPRequest) (*OTPResponse, error)
 	VerifyOTP(ctx context.Context, req VerifyOTPRequest) (*AuthResponse, error)
 
+	LoginWithGoogle(ctx context.Context, req GoogleLoginRequest) (*AuthResponse, error)
+
 	InitiateGoogleOAuth(ctx context.Context) (string, error)
 	HandleGoogleOAuthCallback(ctx context.Context, code string) (*AuthResponse, error)
 
@@ -259,6 +261,46 @@ func (s *Service) VerifyOTP(ctx context.Context, req VerifyOTPRequest) (*AuthRes
 		_, err = s.repository.CreateAuthMethod(ctx, user.ID, db.AuthMethodTypeOtp, map[string]interface{}{})
 		if err != nil {
 			s.logger.Warn("Failed to create OTP auth method", zap.Error(err))
+		}
+	}
+
+	// Generate tokens
+	return s.generateAuthResponse(ctx, user)
+}
+
+// LoginWithGoogle authenticates a user using Google profile data provided by frontend
+func (s *Service) LoginWithGoogle(ctx context.Context, req GoogleLoginRequest) (*AuthResponse, error) {
+	// Find or create user
+	user, err := s.repository.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		// Create new user
+		var emailPg pgtype.Text
+		emailPg.Scan(req.Email)
+
+		user, err = s.repository.CreateUser(ctx, emailPg, pgtype.Text{}, pgtype.Text{}, pgtype.Int8{})
+		if err != nil {
+			return nil, fmt.Errorf("failed to create user: %w", err)
+		}
+	}
+
+	// Create or update Google auth method
+	googleData := GoogleAuthData{
+		GoogleID: req.ExternalID,
+		Email:    req.Email,
+	}
+
+	authMethod, err := s.repository.GetAuthMethodByUserIDAndType(ctx, user.ID, db.AuthMethodTypeGoogle)
+	if err != nil {
+		// Create new auth method
+		_, err = s.repository.CreateAuthMethod(ctx, user.ID, db.AuthMethodTypeGoogle, googleData)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create auth method: %w", err)
+		}
+	} else {
+		// Update existing auth method
+		_, err = s.repository.UpdateAuthMethod(ctx, authMethod.ID, googleData, true)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update auth method: %w", err)
 		}
 	}
 

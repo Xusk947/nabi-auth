@@ -41,6 +41,7 @@ func NewController(service IService, jwtService *jwt.JWTService, logger *zap.Log
 	// OAuth2 endpoints
 	route.Get("/oauth2/google", c.initiateGoogleOAuth)
 	route.Get("/oauth2/google/callback", c.handleGoogleOAuthCallback)
+	route.Post("/google/login", c.loginWithGoogle)
 
 	// Telegram endpoints
 	route.Post("/telegram/verify", c.verifyTelegram)
@@ -226,6 +227,27 @@ func (c *Controller) handleGoogleOAuthCallback(ctx *fiber.Ctx) error {
 		c.logger.Error("Google OAuth callback failed", zap.Error(err))
 		return ctx.Status(fiber.StatusUnauthorized).JSON(ErrorResponse{
 			Error:   "oauth_callback_failed",
+			Message: err.Error(),
+		})
+	}
+
+	return ctx.JSON(response)
+}
+
+func (c *Controller) loginWithGoogle(ctx *fiber.Ctx) error {
+	var req GoogleLoginRequest
+	if err := ctx.BodyParser(&req); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+			Error:   "invalid_request",
+			Message: "Failed to parse request body",
+		})
+	}
+
+	response, err := c.service.LoginWithGoogle(ctx.Context(), req)
+	if err != nil {
+		c.logger.Error("Google login failed", zap.Error(err))
+		return ctx.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+			Error:   "google_login_failed",
 			Message: err.Error(),
 		})
 	}

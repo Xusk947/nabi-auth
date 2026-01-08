@@ -32,6 +32,14 @@ type VerifyOTPRequest struct {
 	Code       string `json:"code" validate:"required,len=6"`
 }
 
+type GoogleLoginRequest struct {
+	ExternalID string `json:"external_id" validate:"required"`
+	Email      string `json:"email" validate:"required,email"`
+	FirstName  string `json:"first_name"`
+	LastName   string `json:"last_name"`
+	AvatarURL  string `json:"avatar_url"`
+}
+
 type TelegramVerifyRequest struct {
 	InitData string `json:"init_data" validate:"required"` // Telegram WebApp initData
 }
