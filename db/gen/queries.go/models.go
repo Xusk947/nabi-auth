@@ -93,4 +93,5 @@ type User struct {
 	TelegramID       pgtype.Int8
 	CreatedAt        pgtype.Timestamp
 	UpdatedAt        pgtype.Timestamp
+	AvatarUrl        pgtype.Text
 }

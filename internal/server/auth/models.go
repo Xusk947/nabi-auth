@@ -58,6 +58,7 @@ type UserInfo struct {
 	Email            string `json:"email,omitempty"`
 	PhoneNumber      string `json:"phone_number,omitempty"`
 	TelegramUsername string `json:"telegram_username,omitempty"`
+	AvatarURL        string `json:"avatar_url,omitempty"`
 }
 
 type OTPResponse struct {
@@ -95,7 +96,7 @@ type TelegramAuthData struct {
 
 // Helper functions
 
-func ToUserInfo(userID pgtype.UUID, email, phoneNumber, telegramUsername pgtype.Text) UserInfo {
+func ToUserInfo(userID pgtype.UUID, email, phoneNumber, telegramUsername, avatarURL pgtype.Text) UserInfo {
 	info := UserInfo{}
 	if userID.Valid && len(userID.Bytes) == 16 {
 		// Convert UUID bytes to string representation
@@ -111,6 +112,9 @@ func ToUserInfo(userID pgtype.UUID, email, phoneNumber, telegramUsername pgtype.
 	}
 	if telegramUsername.Valid {
 		info.TelegramUsername = telegramUsername.String
+	}
+	if avatarURL.Valid {
+		info.AvatarURL = avatarURL.String
 	}
 	return info
 }

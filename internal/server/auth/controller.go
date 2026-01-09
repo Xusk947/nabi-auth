@@ -4,6 +4,7 @@ import (
 	"nabi-auth/internal/pkg/jwt"
 
 	"github.com/gofiber/fiber/v2"
+	fiberSwagger "github.com/swaggo/fiber-swagger"
 	"go.uber.org/zap"
 )
 
@@ -19,7 +20,7 @@ func NewController(service IService, jwtService *jwt.JWTService, logger *zap.Log
 	c := &Controller{
 		service:    service,
 		jwtService: jwtService,
-		logger:     logger,
+		logger:     logger.Named("auth.controller"),
 	}
 
 	route := api.Group("/auth")
@@ -27,6 +28,9 @@ func NewController(service IService, jwtService *jwt.JWTService, logger *zap.Log
 	// Public endpoints (no auth required)
 	route.Get("/.well-known/jwks.json", c.getPublicKey) // JWKS endpoint (standard)
 	route.Get("/public-key", c.getPublicKey)            // Alternative endpoint
+
+	// Swagger
+	route.Get("/swagger/*", fiberSwagger.WrapHandler)
 
 	// Authentication endpoints
 	route.Post("/register", c.register)
@@ -46,11 +50,21 @@ func NewController(service IService, jwtService *jwt.JWTService, logger *zap.Log
 	// Telegram endpoints
 	route.Post("/telegram/verify", c.verifyTelegram)
 
-	logger.Info("Auth Controller initialized")
+	c.logger.Info("Auth Controller initialized")
 
 	return c
 }
 
+// register godoc
+// @Summary      Register a new user
+// @Description  Register a new user with email or phone number and password
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body RegisterRequest true "Registration Request"
+// @Success      200  {object}  AuthResponse
+// @Failure      400  {object}  ErrorResponse
+// @Router       /auth/register [post]
 func (c *Controller) register(ctx *fiber.Ctx) error {
 	var req RegisterRequest
 	if err := ctx.BodyParser(&req); err != nil {
@@ -87,6 +101,17 @@ func (c *Controller) register(ctx *fiber.Ctx) error {
 	return ctx.JSON(response)
 }
 
+// login godoc
+// @Summary      Login user
+// @Description  Login with email and password
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body LoginRequest true "Login Request"
+// @Success      200  {object}  AuthResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      401  {object}  ErrorResponse
+// @Router       /auth/login [post]
 func (c *Controller) login(ctx *fiber.Ctx) error {
 	var req LoginRequest
 	if err := ctx.BodyParser(&req); err != nil {
@@ -108,6 +133,17 @@ func (c *Controller) login(ctx *fiber.Ctx) error {
 	return ctx.JSON(response)
 }
 
+// refreshToken godoc
+// @Summary      Refresh access token
+// @Description  Get a new access token using a refresh token
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body RefreshTokenRequest true "Refresh Token Request"
+// @Success      200  {object}  AuthResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      401  {object}  ErrorResponse
+// @Router       /auth/refresh [post]
 func (c *Controller) refreshToken(ctx *fiber.Ctx) error {
 	var req RefreshTokenRequest
 	if err := ctx.BodyParser(&req); err != nil {
@@ -129,6 +165,17 @@ func (c *Controller) refreshToken(ctx *fiber.Ctx) error {
 	return ctx.JSON(response)
 }
 
+// logout godoc
+// @Summary      Logout user
+// @Description  Invalidate the current session/token
+// @Tags         auth
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /auth/logout [post]
 func (c *Controller) logout(ctx *fiber.Ctx) error {
 	// Get token from Authorization header
 	authHeader := ctx.Get("Authorization")
@@ -158,6 +205,16 @@ func (c *Controller) logout(ctx *fiber.Ctx) error {
 	})
 }
 
+// sendOTP godoc
+// @Summary      Send OTP
+// @Description  Send One-Time Password to email or phone
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body SendOTPRequest true "Send OTP Request"
+// @Success      200  {object}  OTPResponse
+// @Failure      400  {object}  ErrorResponse
+// @Router       /auth/otp/send [post]
 func (c *Controller) sendOTP(ctx *fiber.Ctx) error {
 	var req SendOTPRequest
 	if err := ctx.BodyParser(&req); err != nil {
@@ -179,6 +236,17 @@ func (c *Controller) sendOTP(ctx *fiber.Ctx) error {
 	return ctx.JSON(response)
 }
 
+// verifyOTP godoc
+// @Summary      Verify OTP
+// @Description  Verify One-Time Password
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body VerifyOTPRequest true "Verify OTP Request"
+// @Success      200  {object}  AuthResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      401  {object}  ErrorResponse
+// @Router       /auth/otp/verify [post]
 func (c *Controller) verifyOTP(ctx *fiber.Ctx) error {
 	var req VerifyOTPRequest
 	if err := ctx.BodyParser(&req); err != nil {
@@ -200,6 +268,13 @@ func (c *Controller) verifyOTP(ctx *fiber.Ctx) error {
 	return ctx.JSON(response)
 }
 
+// initiateGoogleOAuth godoc
+// @Summary      Initiate Google OAuth
+// @Description  Redirect to Google OAuth login page
+// @Tags         oauth
+// @Success      307  {string}  string "Redirect to Google"
+// @Failure      500  {object}  ErrorResponse
+// @Router       /auth/oauth2/google [get]
 func (c *Controller) initiateGoogleOAuth(ctx *fiber.Ctx) error {
 	url, err := c.service.InitiateGoogleOAuth(ctx.Context())
 	if err != nil {
@@ -213,6 +288,15 @@ func (c *Controller) initiateGoogleOAuth(ctx *fiber.Ctx) error {
 	return ctx.Redirect(url, fiber.StatusTemporaryRedirect)
 }
 
+// handleGoogleOAuthCallback godoc
+// @Summary      Google OAuth Callback
+// @Description  Handle Google OAuth callback
+// @Tags         oauth
+// @Param        code query string true "Authorization Code"
+// @Success      200  {object}  AuthResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      401  {object}  ErrorResponse
+// @Router       /auth/oauth2/google/callback [get]
 func (c *Controller) handleGoogleOAuthCallback(ctx *fiber.Ctx) error {
 	code := ctx.Query("code")
 	if code == "" {
@@ -234,6 +318,17 @@ func (c *Controller) handleGoogleOAuthCallback(ctx *fiber.Ctx) error {
 	return ctx.JSON(response)
 }
 
+// loginWithGoogle godoc
+// @Summary      Login with Google (Direct)
+// @Description  Login using Google token details directly
+// @Tags         oauth
+// @Accept       json
+// @Produce      json
+// @Param        request body GoogleLoginRequest true "Google Login Request"
+// @Success      200  {object}  AuthResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /auth/google/login [post]
 func (c *Controller) loginWithGoogle(ctx *fiber.Ctx) error {
 	var req GoogleLoginRequest
 	if err := ctx.BodyParser(&req); err != nil {
@@ -255,6 +350,17 @@ func (c *Controller) loginWithGoogle(ctx *fiber.Ctx) error {
 	return ctx.JSON(response)
 }
 
+// verifyTelegram godoc
+// @Summary      Verify Telegram Login
+// @Description  Verify Telegram WebApp login data
+// @Tags         oauth
+// @Accept       json
+// @Produce      json
+// @Param        request body TelegramVerifyRequest true "Telegram Verify Request"
+// @Success      200  {object}  AuthResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      401  {object}  ErrorResponse
+// @Router       /auth/telegram/verify [post]
 func (c *Controller) verifyTelegram(ctx *fiber.Ctx) error {
 	var req TelegramVerifyRequest
 	if err := ctx.BodyParser(&req); err != nil {
@@ -276,8 +382,14 @@ func (c *Controller) verifyTelegram(ctx *fiber.Ctx) error {
 	return ctx.JSON(response)
 }
 
-// getPublicKey returns the public key in PEM format for other microservices
-// This allows other services to verify JWT tokens without needing the private key
+// getPublicKey godoc
+// @Summary      Get Public Key
+// @Description  Get the public key in JWKS format
+// @Tags         auth
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  ErrorResponse
+// @Router       /auth/.well-known/jwks.json [get]
 func (c *Controller) getPublicKey(ctx *fiber.Ctx) error {
 	publicKeyPEM, err := c.jwtService.GetPublicKeyPEM()
 	if err != nil {

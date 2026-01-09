@@ -96,7 +96,7 @@ func (s *Service) Register(ctx context.Context, req RegisterRequest) (*AuthRespo
 		phonePg.Scan(req.PhoneNumber)
 	}
 
-	user, err = s.repository.CreateUser(ctx, emailPg, phonePg, pgtype.Text{}, pgtype.Int8{})
+	user, err = s.repository.CreateUser(ctx, emailPg, phonePg, pgtype.Text{}, pgtype.Int8{}, pgtype.Text{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
@@ -192,7 +192,7 @@ func (s *Service) SendOTP(ctx context.Context, req SendOTPRequest) (*OTPResponse
 			phonePg.Scan(req.Identifier)
 		}
 
-		user, err = s.repository.CreateUser(ctx, emailPg, phonePg, pgtype.Text{}, pgtype.Int8{})
+		user, err = s.repository.CreateUser(ctx, emailPg, phonePg, pgtype.Text{}, pgtype.Int8{}, pgtype.Text{})
 		if err != nil {
 			return nil, fmt.Errorf("failed to create user: %w", err)
 		}
@@ -277,7 +277,12 @@ func (s *Service) LoginWithGoogle(ctx context.Context, req GoogleLoginRequest) (
 		var emailPg pgtype.Text
 		emailPg.Scan(req.Email)
 
-		user, err = s.repository.CreateUser(ctx, emailPg, pgtype.Text{}, pgtype.Text{}, pgtype.Int8{})
+		var avatarPg pgtype.Text
+		if req.AvatarURL != "" {
+			avatarPg.Scan(req.AvatarURL)
+		}
+
+		user, err = s.repository.CreateUser(ctx, emailPg, pgtype.Text{}, pgtype.Text{}, pgtype.Int8{}, avatarPg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create user: %w", err)
 		}
@@ -340,9 +345,10 @@ func (s *Service) HandleGoogleOAuthCallback(ctx context.Context, code string) (*
 	defer resp.Body.Close()
 
 	var googleUser struct {
-		ID    string `json:"id"`
-		Email string `json:"email"`
-		Name  string `json:"name"`
+		ID      string `json:"id"`
+		Email   string `json:"email"`
+		Name    string `json:"name"`
+		Picture string `json:"picture"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&googleUser); err != nil {
@@ -356,7 +362,12 @@ func (s *Service) HandleGoogleOAuthCallback(ctx context.Context, code string) (*
 		var emailPg pgtype.Text
 		emailPg.Scan(googleUser.Email)
 
-		user, err = s.repository.CreateUser(ctx, emailPg, pgtype.Text{}, pgtype.Text{}, pgtype.Int8{})
+		var avatarPg pgtype.Text
+		if googleUser.Picture != "" {
+			avatarPg.Scan(googleUser.Picture)
+		}
+
+		user, err = s.repository.CreateUser(ctx, emailPg, pgtype.Text{}, pgtype.Text{}, pgtype.Int8{}, avatarPg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create user: %w", err)
 		}
@@ -453,7 +464,12 @@ func (s *Service) VerifyTelegramAuth(ctx context.Context, req TelegramVerifyRequ
 		var telegramIDPg pgtype.Int8
 		telegramIDPg.Scan(telegramUser.ID)
 
-		user, err = s.repository.CreateUser(ctx, pgtype.Text{}, pgtype.Text{}, telegramUsernamePg, telegramIDPg)
+		var avatarPg pgtype.Text
+		if telegramUser.PhotoURL != "" {
+			avatarPg.Scan(telegramUser.PhotoURL)
+		}
+
+		user, err = s.repository.CreateUser(ctx, pgtype.Text{}, pgtype.Text{}, telegramUsernamePg, telegramIDPg, avatarPg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create user: %w", err)
 		}
@@ -515,7 +531,7 @@ func (s *Service) generateAuthResponse(ctx context.Context, user db.User) (*Auth
 		AccessToken:  tokenPair.AccessToken,
 		RefreshToken: tokenPair.RefreshToken,
 		ExpiresIn:    tokenPair.ExpiresIn,
-		User:         ToUserInfo(user.ID, user.Email, user.PhoneNumber, user.TelegramUsername),
+		User:         ToUserInfo(user.ID, user.Email, user.PhoneNumber, user.TelegramUsername, user.AvatarUrl),
 	}, nil
 }
 

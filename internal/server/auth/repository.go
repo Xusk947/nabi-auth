@@ -4,19 +4,21 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	db "nabi-auth/db/gen/queries.go"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 //go:generate mockgen -source=repository.go -destination=mocks/repository_mock.go -package=mocks
 
 type IRepository interface {
-	CreateUser(ctx context.Context, email, phoneNumber, telegramUsername pgtype.Text, telegramID pgtype.Int8) (db.User, error)
+	CreateUser(ctx context.Context, email, phoneNumber, telegramUsername pgtype.Text, telegramID pgtype.Int8, avatarURL pgtype.Text) (db.User, error)
 	GetUserByID(ctx context.Context, userID pgtype.UUID) (db.User, error)
 	GetUserByEmail(ctx context.Context, email string) (db.User, error)
 	GetUserByPhone(ctx context.Context, phoneNumber string) (db.User, error)
 	GetUserByTelegramID(ctx context.Context, telegramID int64) (db.User, error)
 	GetUserByTelegramUsername(ctx context.Context, username string) (db.User, error)
+	UpdateUser(ctx context.Context, params db.UpdateUserParams) (db.User, error)
 
 	CreateAuthMethod(ctx context.Context, userID pgtype.UUID, methodType db.AuthMethodType, methodData interface{}) (db.AuthMethod, error)
 	GetAuthMethodByUserIDAndType(ctx context.Context, userID pgtype.UUID, methodType db.AuthMethodType) (db.AuthMethod, error)
@@ -45,17 +47,44 @@ func NewRepository(queries *db.Queries) IRepository {
 	}
 }
 
-func (r *Repository) CreateUser(ctx context.Context, email, phoneNumber, telegramUsername pgtype.Text, telegramID pgtype.Int8) (db.User, error) {
-	return r.queries.CreateUser(ctx, db.CreateUserParams{
+func (r *Repository) CreateUser(ctx context.Context, email, phoneNumber, telegramUsername pgtype.Text, telegramID pgtype.Int8, avatarURL pgtype.Text) (db.User, error) {
+	row, err := r.queries.CreateUser(ctx, db.CreateUserParams{
 		Email:            email,
 		PhoneNumber:      phoneNumber,
 		TelegramUsername: telegramUsername,
 		TelegramID:       telegramID,
+		AvatarUrl:        avatarURL,
 	})
+	if err != nil {
+		return db.User{}, err
+	}
+	return db.User{
+		ID:               row.ID,
+		Email:            row.Email,
+		PhoneNumber:      row.PhoneNumber,
+		TelegramUsername: row.TelegramUsername,
+		TelegramID:       row.TelegramID,
+		AvatarUrl:        row.AvatarUrl,
+		CreatedAt:        row.CreatedAt,
+		UpdatedAt:        row.UpdatedAt,
+	}, nil
 }
 
 func (r *Repository) GetUserByID(ctx context.Context, userID pgtype.UUID) (db.User, error) {
-	return r.queries.GetUserByID(ctx, userID)
+	row, err := r.queries.GetUserByID(ctx, userID)
+	if err != nil {
+		return db.User{}, err
+	}
+	return db.User{
+		ID:               row.ID,
+		Email:            row.Email,
+		PhoneNumber:      row.PhoneNumber,
+		TelegramUsername: row.TelegramUsername,
+		TelegramID:       row.TelegramID,
+		AvatarUrl:        row.AvatarUrl,
+		CreatedAt:        row.CreatedAt,
+		UpdatedAt:        row.UpdatedAt,
+	}, nil
 }
 
 func (r *Repository) GetUserByEmail(ctx context.Context, email string) (db.User, error) {
@@ -63,7 +92,20 @@ func (r *Repository) GetUserByEmail(ctx context.Context, email string) (db.User,
 	if err := emailPg.Scan(email); err != nil {
 		return db.User{}, err
 	}
-	return r.queries.GetUserByEmail(ctx, emailPg)
+	row, err := r.queries.GetUserByEmail(ctx, emailPg)
+	if err != nil {
+		return db.User{}, err
+	}
+	return db.User{
+		ID:               row.ID,
+		Email:            row.Email,
+		PhoneNumber:      row.PhoneNumber,
+		TelegramUsername: row.TelegramUsername,
+		TelegramID:       row.TelegramID,
+		AvatarUrl:        row.AvatarUrl,
+		CreatedAt:        row.CreatedAt,
+		UpdatedAt:        row.UpdatedAt,
+	}, nil
 }
 
 func (r *Repository) GetUserByPhone(ctx context.Context, phoneNumber string) (db.User, error) {
@@ -71,7 +113,20 @@ func (r *Repository) GetUserByPhone(ctx context.Context, phoneNumber string) (db
 	if err := phonePg.Scan(phoneNumber); err != nil {
 		return db.User{}, err
 	}
-	return r.queries.GetUserByPhone(ctx, phonePg)
+	row, err := r.queries.GetUserByPhone(ctx, phonePg)
+	if err != nil {
+		return db.User{}, err
+	}
+	return db.User{
+		ID:               row.ID,
+		Email:            row.Email,
+		PhoneNumber:      row.PhoneNumber,
+		TelegramUsername: row.TelegramUsername,
+		TelegramID:       row.TelegramID,
+		AvatarUrl:        row.AvatarUrl,
+		CreatedAt:        row.CreatedAt,
+		UpdatedAt:        row.UpdatedAt,
+	}, nil
 }
 
 func (r *Repository) GetUserByTelegramID(ctx context.Context, telegramID int64) (db.User, error) {
@@ -79,7 +134,20 @@ func (r *Repository) GetUserByTelegramID(ctx context.Context, telegramID int64) 
 	if err := tgID.Scan(telegramID); err != nil {
 		return db.User{}, err
 	}
-	return r.queries.GetUserByTelegramID(ctx, tgID)
+	row, err := r.queries.GetUserByTelegramID(ctx, tgID)
+	if err != nil {
+		return db.User{}, err
+	}
+	return db.User{
+		ID:               row.ID,
+		Email:            row.Email,
+		PhoneNumber:      row.PhoneNumber,
+		TelegramUsername: row.TelegramUsername,
+		TelegramID:       row.TelegramID,
+		AvatarUrl:        row.AvatarUrl,
+		CreatedAt:        row.CreatedAt,
+		UpdatedAt:        row.UpdatedAt,
+	}, nil
 }
 
 func (r *Repository) GetUserByTelegramUsername(ctx context.Context, username string) (db.User, error) {
@@ -87,7 +155,37 @@ func (r *Repository) GetUserByTelegramUsername(ctx context.Context, username str
 	if err := usernamePg.Scan(username); err != nil {
 		return db.User{}, err
 	}
-	return r.queries.GetUserByTelegramUsername(ctx, usernamePg)
+	row, err := r.queries.GetUserByTelegramUsername(ctx, usernamePg)
+	if err != nil {
+		return db.User{}, err
+	}
+	return db.User{
+		ID:               row.ID,
+		Email:            row.Email,
+		PhoneNumber:      row.PhoneNumber,
+		TelegramUsername: row.TelegramUsername,
+		TelegramID:       row.TelegramID,
+		AvatarUrl:        row.AvatarUrl,
+		CreatedAt:        row.CreatedAt,
+		UpdatedAt:        row.UpdatedAt,
+	}, nil
+}
+
+func (r *Repository) UpdateUser(ctx context.Context, params db.UpdateUserParams) (db.User, error) {
+	row, err := r.queries.UpdateUser(ctx, params)
+	if err != nil {
+		return db.User{}, err
+	}
+	return db.User{
+		ID:               row.ID,
+		Email:            row.Email,
+		PhoneNumber:      row.PhoneNumber,
+		TelegramUsername: row.TelegramUsername,
+		TelegramID:       row.TelegramID,
+		AvatarUrl:        row.AvatarUrl,
+		CreatedAt:        row.CreatedAt,
+		UpdatedAt:        row.UpdatedAt,
+	}, nil
 }
 
 func (r *Repository) CreateAuthMethod(ctx context.Context, userID pgtype.UUID, methodType db.AuthMethodType, methodData interface{}) (db.AuthMethod, error) {

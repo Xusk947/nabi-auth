@@ -12,9 +12,9 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (email, phone_number, telegram_username, telegram_id)
-VALUES ($1, $2, $3, $4)
-RETURNING id, email, phone_number, telegram_username, telegram_id, created_at, updated_at
+INSERT INTO users (email, phone_number, telegram_username, telegram_id, avatar_url)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, email, phone_number, telegram_username, telegram_id, avatar_url, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -22,22 +22,36 @@ type CreateUserParams struct {
 	PhoneNumber      pgtype.Text
 	TelegramUsername pgtype.Text
 	TelegramID       pgtype.Int8
+	AvatarUrl        pgtype.Text
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+type CreateUserRow struct {
+	ID               pgtype.UUID
+	Email            pgtype.Text
+	PhoneNumber      pgtype.Text
+	TelegramUsername pgtype.Text
+	TelegramID       pgtype.Int8
+	AvatarUrl        pgtype.Text
+	CreatedAt        pgtype.Timestamp
+	UpdatedAt        pgtype.Timestamp
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.Email,
 		arg.PhoneNumber,
 		arg.TelegramUsername,
 		arg.TelegramID,
+		arg.AvatarUrl,
 	)
-	var i User
+	var i CreateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.PhoneNumber,
 		&i.TelegramUsername,
 		&i.TelegramID,
+		&i.AvatarUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -45,18 +59,30 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, phone_number, telegram_username, telegram_id, created_at, updated_at FROM users WHERE email = $1 LIMIT 1
+SELECT id, email, phone_number, telegram_username, telegram_id, avatar_url, created_at, updated_at FROM users WHERE email = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (User, error) {
+type GetUserByEmailRow struct {
+	ID               pgtype.UUID
+	Email            pgtype.Text
+	PhoneNumber      pgtype.Text
+	TelegramUsername pgtype.Text
+	TelegramID       pgtype.Int8
+	AvatarUrl        pgtype.Text
+	CreatedAt        pgtype.Timestamp
+	UpdatedAt        pgtype.Timestamp
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (GetUserByEmailRow, error) {
 	row := q.db.QueryRow(ctx, getUserByEmail, email)
-	var i User
+	var i GetUserByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.PhoneNumber,
 		&i.TelegramUsername,
 		&i.TelegramID,
+		&i.AvatarUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -64,18 +90,30 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (User, 
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, email, phone_number, telegram_username, telegram_id, created_at, updated_at FROM users WHERE id = $1 LIMIT 1
+SELECT id, email, phone_number, telegram_username, telegram_id, avatar_url, created_at, updated_at FROM users WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error) {
+type GetUserByIDRow struct {
+	ID               pgtype.UUID
+	Email            pgtype.Text
+	PhoneNumber      pgtype.Text
+	TelegramUsername pgtype.Text
+	TelegramID       pgtype.Int8
+	AvatarUrl        pgtype.Text
+	CreatedAt        pgtype.Timestamp
+	UpdatedAt        pgtype.Timestamp
+}
+
+func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDRow, error) {
 	row := q.db.QueryRow(ctx, getUserByID, id)
-	var i User
+	var i GetUserByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.PhoneNumber,
 		&i.TelegramUsername,
 		&i.TelegramID,
+		&i.AvatarUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -83,18 +121,30 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 }
 
 const getUserByPhone = `-- name: GetUserByPhone :one
-SELECT id, email, phone_number, telegram_username, telegram_id, created_at, updated_at FROM users WHERE phone_number = $1 LIMIT 1
+SELECT id, email, phone_number, telegram_username, telegram_id, avatar_url, created_at, updated_at FROM users WHERE phone_number = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserByPhone(ctx context.Context, phoneNumber pgtype.Text) (User, error) {
+type GetUserByPhoneRow struct {
+	ID               pgtype.UUID
+	Email            pgtype.Text
+	PhoneNumber      pgtype.Text
+	TelegramUsername pgtype.Text
+	TelegramID       pgtype.Int8
+	AvatarUrl        pgtype.Text
+	CreatedAt        pgtype.Timestamp
+	UpdatedAt        pgtype.Timestamp
+}
+
+func (q *Queries) GetUserByPhone(ctx context.Context, phoneNumber pgtype.Text) (GetUserByPhoneRow, error) {
 	row := q.db.QueryRow(ctx, getUserByPhone, phoneNumber)
-	var i User
+	var i GetUserByPhoneRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.PhoneNumber,
 		&i.TelegramUsername,
 		&i.TelegramID,
+		&i.AvatarUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -102,18 +152,30 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phoneNumber pgtype.Text) (
 }
 
 const getUserByTelegramID = `-- name: GetUserByTelegramID :one
-SELECT id, email, phone_number, telegram_username, telegram_id, created_at, updated_at FROM users WHERE telegram_id = $1 LIMIT 1
+SELECT id, email, phone_number, telegram_username, telegram_id, avatar_url, created_at, updated_at FROM users WHERE telegram_id = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID pgtype.Int8) (User, error) {
+type GetUserByTelegramIDRow struct {
+	ID               pgtype.UUID
+	Email            pgtype.Text
+	PhoneNumber      pgtype.Text
+	TelegramUsername pgtype.Text
+	TelegramID       pgtype.Int8
+	AvatarUrl        pgtype.Text
+	CreatedAt        pgtype.Timestamp
+	UpdatedAt        pgtype.Timestamp
+}
+
+func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID pgtype.Int8) (GetUserByTelegramIDRow, error) {
 	row := q.db.QueryRow(ctx, getUserByTelegramID, telegramID)
-	var i User
+	var i GetUserByTelegramIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.PhoneNumber,
 		&i.TelegramUsername,
 		&i.TelegramID,
+		&i.AvatarUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -121,18 +183,30 @@ func (q *Queries) GetUserByTelegramID(ctx context.Context, telegramID pgtype.Int
 }
 
 const getUserByTelegramUsername = `-- name: GetUserByTelegramUsername :one
-SELECT id, email, phone_number, telegram_username, telegram_id, created_at, updated_at FROM users WHERE telegram_username = $1 LIMIT 1
+SELECT id, email, phone_number, telegram_username, telegram_id, avatar_url, created_at, updated_at FROM users WHERE telegram_username = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserByTelegramUsername(ctx context.Context, telegramUsername pgtype.Text) (User, error) {
+type GetUserByTelegramUsernameRow struct {
+	ID               pgtype.UUID
+	Email            pgtype.Text
+	PhoneNumber      pgtype.Text
+	TelegramUsername pgtype.Text
+	TelegramID       pgtype.Int8
+	AvatarUrl        pgtype.Text
+	CreatedAt        pgtype.Timestamp
+	UpdatedAt        pgtype.Timestamp
+}
+
+func (q *Queries) GetUserByTelegramUsername(ctx context.Context, telegramUsername pgtype.Text) (GetUserByTelegramUsernameRow, error) {
 	row := q.db.QueryRow(ctx, getUserByTelegramUsername, telegramUsername)
-	var i User
+	var i GetUserByTelegramUsernameRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.PhoneNumber,
 		&i.TelegramUsername,
 		&i.TelegramID,
+		&i.AvatarUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -145,9 +219,10 @@ SET email = COALESCE($2, email),
     phone_number = COALESCE($3, phone_number),
     telegram_username = COALESCE($4, telegram_username),
     telegram_id = COALESCE($5, telegram_id),
+    avatar_url = COALESCE($6, avatar_url),
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, email, phone_number, telegram_username, telegram_id, created_at, updated_at
+RETURNING id, email, phone_number, telegram_username, telegram_id, avatar_url, created_at, updated_at
 `
 
 type UpdateUserParams struct {
@@ -156,23 +231,37 @@ type UpdateUserParams struct {
 	PhoneNumber      pgtype.Text
 	TelegramUsername pgtype.Text
 	TelegramID       pgtype.Int8
+	AvatarUrl        pgtype.Text
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+type UpdateUserRow struct {
+	ID               pgtype.UUID
+	Email            pgtype.Text
+	PhoneNumber      pgtype.Text
+	TelegramUsername pgtype.Text
+	TelegramID       pgtype.Int8
+	AvatarUrl        pgtype.Text
+	CreatedAt        pgtype.Timestamp
+	UpdatedAt        pgtype.Timestamp
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
 	row := q.db.QueryRow(ctx, updateUser,
 		arg.ID,
 		arg.Email,
 		arg.PhoneNumber,
 		arg.TelegramUsername,
 		arg.TelegramID,
+		arg.AvatarUrl,
 	)
-	var i User
+	var i UpdateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.PhoneNumber,
 		&i.TelegramUsername,
 		&i.TelegramID,
+		&i.AvatarUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
